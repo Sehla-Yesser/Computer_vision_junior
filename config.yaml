@@ -1,0 +1,59 @@
+# Configuration file for Person Detector
+
+# Model settings
+models:
+  person_detection:
+    default: yolov8n.pt
+    available:
+      - yolov8n.pt  # Nano - fastest
+      - yolov8s.pt  # Small
+      - yolov8m.pt  # Medium
+      - yolov8l.pt  # Large
+      - yolov8x.pt  # Extra Large - most accurate
+  
+  face_detection:
+    default: yolov8n-face.pt
+  
+  confidence_threshold: 0.5
+
+# Paths
+paths:
+  input: data/input
+  output: data/output
+  models: models
+
+# Detection settings
+detection:
+  person_class_id: 0  # COCO dataset person class
+  
+# FER settings
+fer:
+  emotions:
+    - angry
+    - disgust
+    - fear
+    - happy
+    - sad
+    - surprise
+    - neutral
+  
+  mediapipe:
+    face_detection_model: 1  # 0 for short range, 1 for full range
+    min_detection_confidence: 0.5
+    min_tracking_confidence: 0.5
+    max_num_faces: 10
+
+# Video processing
+video:
+  output_codec: mp4v
+  progress_update_interval: 30  # frames
+
+# Visualization
+visualization:
+  person_bbox_color: [0, 255, 0]  # Green (BGR)
+  face_bbox_color: [255, 0, 0]    # Blue (BGR)
+  landmark_color: [0, 255, 255]   # Yellow (BGR)
+  bbox_thickness: 2
+  font: cv2.FONT_HERSHEY_SIMPLEX
+  font_scale: 0.6
+  font_thickness: 2
