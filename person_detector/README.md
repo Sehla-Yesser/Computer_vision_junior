@@ -66,93 +66,70 @@ pip install -r requirements.txt
 
 ## Usage
 
-### 1. Person Detection
+### Basic Webcam Detection
 
-Detect persons in images or videos:
+Start real-time person detection with your webcam:
 
 ```bash
-# Process an image
-python src/detection/person_detector.py --input data/input/image.jpg --output data/output/result.jpg
+# Start webcam detection (press 'q' to quit)
+python src/detection/person_detector.py
 
-# Process a video
-python src/detection/person_detector.py --input data/input/video.mp4 --output data/output/result.mp4
+# Or explicitly specify webcam
+python src/detection/person_detector.py --webcam
+
+# Save webcam recording with detections
+python src/detection/person_detector.py --webcam --output data/output/recording.mp4
 
 # Use a different model and confidence threshold
-python src/detection/person_detector.py --input data/input/image.jpg --output data/output/result.jpg --model yolov8m.pt --confidence 0.6
+python src/detection/person_detector.py --webcam --model yolov8m.pt --confidence 0.6
+
+# Use a different camera (if you have multiple cameras)
+python src/detection/person_detector.py --webcam --camera 1
 ```
 
 **Arguments:**
-- `--input, -i`: Path to input image or video (required)
-- `--output, -o`: Path to save output (optional)
+- `--webcam, -w`: Use webcam for real-time detection
+- `--output, -o`: Path to save output video (optional)
 - `--model, -m`: Path to YOLO model (default: yolov8n.pt)
 - `--confidence, -c`: Confidence threshold (default: 0.5)
+- `--camera`: Camera device ID (default: 0)
 
-### 2. Facial Expression Recognition - YOLO Version
+### Run Examples
 
-Detect persons and analyze facial expressions using YOLO:
-
-```bash
-# Process an image
-python src/fer/fer_yolo.py --input data/input/image.jpg --output data/output/fer_result.jpg
-
-# Process a video
-python src/fer/fer_yolo.py --input data/input/video.mp4 --output data/output/fer_result.mp4
-
-# Custom models
-python src/fer/fer_yolo.py --input data/input/image.jpg --person-model yolov8m.pt --face-model yolov8n-face.pt --confidence 0.6
-```
-
-**Arguments:**
-- `--input, -i`: Path to input image or video (required)
-- `--output, -o`: Path to save output (optional)
-- `--person-model`: Path to person detection YOLO model (default: yolov8n.pt)
-- `--face-model`: Path to face detection YOLO model (default: yolov8n-face.pt)
-- `--confidence, -c`: Confidence threshold (default: 0.5)
-
-### 3. Facial Expression Recognition - MediaPipe Version
-
-Detect persons and analyze facial expressions using MediaPipe:
+Try the interactive examples:
 
 ```bash
-# Process an image
-python src/fer/fer_mediapipe.py --input data/input/image.jpg --output data/output/fer_mp_result.jpg
-
-# Process a video
-python src/fer/fer_mediapipe.py --input data/input/video.mp4 --output data/output/fer_mp_result.mp4
-
-# With custom settings
-python src/fer/fer_mediapipe.py --input data/input/image.jpg --person-model yolov8m.pt --confidence 0.6
+cd examples
+python example_person_detection.py
 ```
 
-**Arguments:**
-- `--input, -i`: Path to input image or video (required)
-- `--output, -o`: Path to save output (optional)
-- `--person-model`: Path to person detection YOLO model (default: yolov8n.pt)
-- `--confidence, -c`: Confidence threshold (default: 0.5)
+This will show you a menu with different webcam detection options:
+1. Basic Webcam Detection
+2. Webcam Detection with Recording
+3. Custom Webcam Detection with Statistics
 
 ## Python API Usage
 
-You can also use the classes directly in your Python code:
+You can also use the PersonDetector class directly in your Python code:
 
 ```python
 from src.detection.person_detector import PersonDetector
-from src.fer.fer_yolo import FERYolo
-from src.fer.fer_mediapipe import FERMediaPipe
 import cv2
 
-# Person Detection
+# Initialize detector
 detector = PersonDetector(model_path='yolov8n.pt', confidence=0.5)
-image = cv2.imread('data/input/image.jpg')
-detections = detector.detect_persons(image)
-output_image = detector.detect_and_draw(image)
 
-# FER with YOLO
-fer_yolo = FERYolo(person_model='yolov8n.pt', confidence=0.5)
-output_image, results = fer_yolo.process_image(image)
+# Process webcam
+detector.process_webcam(camera_id=0, save_output=False)
 
-# FER with MediaPipe
-fer_mp = FERMediaPipe(person_model='yolov8n.pt', confidence=0.5)
-output_image, results = fer_mp.process_image(image)
+# Or process individual frames
+cap = cv2.VideoCapture(0)
+ret, frame = cap.read()
+if ret:
+    detections = detector.detect_persons(frame)
+    output_frame = detector.detect_and_draw(frame)
+    cv2.imshow('Detection', output_frame)
+cap.release()
 ```
 
 ## Model Information
@@ -168,19 +145,25 @@ Models are automatically downloaded on first use.
 
 ## Notes
 
-- The FER implementations currently use placeholder emotion analysis. For production use, integrate specialized FER models or trained classifiers.
-- MediaPipe provides more detailed facial landmarks which can be used for advanced expression analysis.
-- YOLO approach is generally faster but may be less accurate for facial landmark detection.
-- For best results with FER, ensure faces are clearly visible and well-lit.
+- Works with any USB webcam or built-in laptop camera
+- Press 'q' in the video window to quit
+- Models are automatically downloaded on first use
+- GPU acceleration is used automatically if CUDA is available
+- For best results, ensure good lighting conditions
+
+## Controls
+
+- **'q'**: Quit the application
+- **ESC**: Alternative quit key
 
 ## Future Enhancements
 
-- Integration with specialized FER models (e.g., EmoNet, AffectNet)
-- Real-time webcam support
 - Multi-person tracking across frames
-- Enhanced emotion classification
-- Export results to JSON/CSV
-- Web interface for easy usage
+- Person re-identification
+- Activity recognition
+- Export detection data to JSON/CSV
+- Web interface for remote monitoring
+- Support for IP cameras
 
 ## Contributing
 

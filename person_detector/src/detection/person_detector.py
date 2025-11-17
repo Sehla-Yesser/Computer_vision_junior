@@ -161,37 +161,115 @@ class PersonDetector:
         print(f"Total frames: {frame_count}")
         print(f"Total detections: {total_detections}")
         print(f"Average persons per frame: {total_detections / frame_count:.2f}")
+    
+    def process_webcam(self, camera_id=0, save_output=False, output_path=None):
+        """
+        Process real-time webcam feed
+        
+        Args:
+            camera_id (int): Camera device ID (default: 0)
+            save_output (bool): Whether to save the output video
+            output_path (str): Path to save output video (optional)
+        """
+        cap = cv2.VideoCapture(camera_id)
+        
+        if not cap.isOpened():
+            print(f"Error: Could not open camera {camera_id}")
+            return
+        
+        # Get camera properties
+        width = int(cap.get(cv2.CAP_PROP_FRAME_WIDTH))
+        height = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
+        fps = 30  # Default fps for webcam
+        
+        # Setup video writer if saving is enabled
+        out = None
+        if save_output and output_path:
+            fourcc = cv2.VideoWriter_fourcc(*'mp4v')
+            out = cv2.VideoWriter(output_path, fourcc, fps, (width, height))
+        
+        print("Starting webcam... Press 'q' to quit")
+        frame_count = 0
+        total_detections = 0
+        
+        while True:
+            ret, frame = cap.read()
+            if not ret:
+                print("Error: Could not read frame")
+                break
+            
+            detections = self.detect_persons(frame)
+            output_frame = self.detect_and_draw(frame)
+            
+            frame_count += 1
+            total_detections += len(detections)
+            
+            # Add FPS and detection count to frame
+            fps_text = f"FPS: {fps} | Persons: {len(detections)}"
+            cv2.putText(output_frame, fps_text, (10, 30),
+                       cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 0), 2)
+            
+            # Display the frame
+            cv2.imshow('Person Detection - Webcam', output_frame)
+            
+            if out:
+                out.write(output_frame)
+            
+            # Check for 'q' key to quit
+            if cv2.waitKey(1) & 0xFF == ord('q'):
+                break
+        
+        cap.release()
+        if out:
+            out.release()
+            print(f"Output video saved to {output_path}")
+        cv2.destroyAllWindows()
+        
+        print(f"\nSession Statistics:")
+        print(f"Total frames processed: {frame_count}")
+        print(f"Total detections: {total_detections}")
+        if frame_count > 0:
+            print(f"Average persons per frame: {total_detections / frame_count:.2f}")
 
 
 def main():
-    parser = argparse.ArgumentParser(description='Detect persons in images or videos using YOLO')
-    parser.add_argument('--input', '-i', type=str, required=True,
-                       help='Path to input image or video')
+    parser = argparse.ArgumentParser(description='Detect persons in images, videos, or webcam using YOLO')
+    parser.add_argument('--input', '-i', type=str, default=None,
+                       help='Path to input image or video (omit for webcam)')
     parser.add_argument('--output', '-o', type=str, default=None,
                        help='Path to save output (optional)')
     parser.add_argument('--model', '-m', type=str, default='yolov8n.pt',
                        help='Path to YOLO model (default: yolov8n.pt)')
     parser.add_argument('--confidence', '-c', type=float, default=0.5,
                        help='Confidence threshold (default: 0.5)')
+    parser.add_argument('--webcam', '-w', action='store_true',
+                       help='Use webcam for real-time detection')
+    parser.add_argument('--camera', type=int, default=0,
+                       help='Camera device ID (default: 0)')
     
     args = parser.parse_args()
     
     # Initialize detector
     detector = PersonDetector(model_path=args.model, confidence=args.confidence)
     
-    # Check if input is image or video
-    input_path = Path(args.input)
-    if not input_path.exists():
-        print(f"Error: Input file {args.input} does not exist")
-        return
-    
-    # Process based on file extension
-    if input_path.suffix.lower() in ['.jpg', '.jpeg', '.png', '.bmp']:
-        detector.process_image(args.input, args.output)
-    elif input_path.suffix.lower() in ['.mp4', '.avi', '.mov', '.mkv']:
-        detector.process_video(args.input, args.output)
+    # Use webcam if --webcam flag is set or no input is provided
+    if args.webcam or args.input is None:
+        save_output = args.output is not None
+        detector.process_webcam(camera_id=args.camera, save_output=save_output, output_path=args.output)
     else:
-        print(f"Error: Unsupported file format {input_path.suffix}")
+        # Check if input is image or video
+        input_path = Path(args.input)
+        if not input_path.exists():
+            print(f"Error: Input file {args.input} does not exist")
+            return
+        
+        # Process based on file extension
+        if input_path.suffix.lower() in ['.jpg', '.jpeg', '.png', '.bmp']:
+            detector.process_image(args.input, args.output)
+        elif input_path.suffix.lower() in ['.mp4', '.avi', '.mov', '.mkv']:
+            detector.process_video(args.input, args.output)
+        else:
+            print(f"Error: Unsupported file format {input_path.suffix}")
 
 
 if __name__ == "__main__":

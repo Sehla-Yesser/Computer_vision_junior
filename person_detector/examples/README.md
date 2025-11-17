@@ -43,39 +43,39 @@ Make sure you have installed all required packages:
 pip install -r requirements.txt
 ```
 
-### 2. Prepare Input Data
+### 2. Check Your Webcam
 
-Place your test images in the `data/input/` directory:
-
-- `sample.jpg` - For person detection examples
-- `sample_face.jpg` - For FER examples with faces
-- `sample.mp4` or `sample_video.mp4` - For video examples
-
-If you don't have sample images, the scripts will inform you which files are needed.
+- Ensure your webcam is connected and working
+- Close any other applications using the webcam
+- The examples will use camera ID 0 by default (your primary webcam)
 
 ### 3. Run the Examples
 
-From the project root directory:
+From the examples directory:
 
 ```bash
-# Person detection examples
-python examples/example_person_detection.py
+cd examples
+python example_person_detection.py
+```
 
-# FER examples
-python examples/example_fer.py
+Or from the project root:
+
+```bash
+python examples/example_person_detection.py
 ```
 
 ## Output
 
-All example outputs will be saved to the `data/output/` directory with descriptive filenames:
+- **Live Display**: See detection results in real-time on your screen
+- **Saved Recordings**: If enabled, recordings are saved to `data/output/` directory:
+  - `person_detection_webcam.mp4`
+  - `fer_yolo_webcam.mp4`
+  - `fer_mediapipe_webcam.mp4`
 
-- `example_person_detection.jpg`
-- `example_fer_yolo.jpg`
-- `example_fer_mediapipe.jpg`
-- `compare_yolo.jpg`
-- `compare_mediapipe.jpg`
-- `custom_fer_analysis.jpg`
-- etc.
+## Controls
+
+- **Press 'q'**: Quit and close the window
+- Each example runs until you press 'q'
 
 ## Modifying Examples
 
@@ -85,18 +85,21 @@ Feel free to modify these examples to suit your needs:
 2. Use different YOLO models (yolov8s.pt, yolov8m.pt, etc.)
 3. Adjust drawing colors and styles
 4. Add custom processing logic
-5. Export results to different formats
+5. Change camera source (use different camera ID)
 
 ## Common Issues
 
-### "No module named 'src'"
-**Solution:** Run the examples from the project root directory, not from the examples directory.
-
-### "Input image not found"
-**Solution:** Make sure you have placed the required images in `data/input/` directory.
+### "Could not open camera"
+**Solution:** 
+- Check if webcam is connected
+- Close other applications using the webcam
+- Try different camera IDs (0, 1, 2, etc.)
 
 ### "No module named 'cv2'"
 **Solution:** Install OpenCV: `pip install opencv-python`
+
+### "Slow frame rate"
+**Solution:** Use a faster YOLO model (yolov8n.pt) or enable GPU acceleration
 
 ## Creating Your Own Examples
 
