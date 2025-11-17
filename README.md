@@ -264,7 +264,7 @@ See LICENSE file for details.
 
 For questions, suggestions, or collaborations:
 - Open an issue on GitHub
-- Email: [Your Email]
+- Email: talelboussetta6@gmail.com
 
 ## ⚠️ Disclaimer
 
